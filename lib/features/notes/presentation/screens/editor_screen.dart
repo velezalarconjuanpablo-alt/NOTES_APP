@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/notes_providers.dart';
+import '../../../security/presentation/providers/security_providers.dart';
+import '../../../security/presentation/screens/pin_setup_screen.dart';
 class EditorScreen extends ConsumerStatefulWidget {
   const EditorScreen({super.key, required this.noteId});
   final String noteId;
@@ -49,9 +51,7 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          IconButton(icon: const Icon(Icons.more_horiz_rounded), onPressed: () => _showNoteActions(context)),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.more_horiz_rounded), onPressed: () => _showNoteActions(context))],
       ),
       body: !_loaded
           ? const Center(child: CircularProgressIndicator())
@@ -93,8 +93,9 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
               final note = await repo.getById(widget.noteId);
               if (note != null) repo.setFavorite(note.id, !note.isFavorite);
             }),
-            ListTile(leading: const Icon(Icons.lock_rounded), title: const Text('Bloquear nota'), onTap: () {
+            ListTile(leading: const Icon(Icons.lock_rounded), title: const Text('Bloquear nota'), onTap: () async {
               Navigator.pop(sheetContext);
+              await _toggleLock(repo);
             }),
             ListTile(leading: const Icon(Icons.delete_rounded), title: const Text('Eliminar'), onTap: () {
               Navigator.pop(sheetContext);
@@ -105,5 +106,24 @@ class _EditorScreenState extends ConsumerState<EditorScreen> {
         ),
       ),
     );
+  }
+  Future<void> _toggleLock(dynamic repo) async {
+    final note = await repo.getById(widget.noteId);
+    if (note == null) return;
+    if (note.isLocked) {
+      await repo.setLocked(note.id, false);
+      return;
+    }
+    final security = ref.read(securityRepositoryProvider);
+    final hasPin = await security.hasPin();
+    if (!hasPin) {
+      if (!mounted) return;
+      final created = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const PinSetupScreen()));
+      if (created != true) return;
+    }
+    await repo.setLocked(note.id, true);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nota bloqueada')));
+    }
   }
 }

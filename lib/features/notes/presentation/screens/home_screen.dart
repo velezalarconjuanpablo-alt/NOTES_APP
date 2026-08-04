@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../shared/widgets/note_navigation.dart';
 import '../providers/notes_providers.dart';
 import '../widgets/note_card.dart';
 import 'editor_screen.dart';
@@ -33,10 +34,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             selectedIndex: _railIndex,
             onDestinationSelected: (i) => setState(() => _railIndex = i),
             extended: MediaQuery.sizeOf(context).width >= 1000,
-            leading: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Icon(Icons.edit_note_rounded, size: 32),
-            ),
+            leading: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Icon(Icons.edit_note_rounded, size: 32)),
             destinations: _railDestinations.map((d) => NavigationRailDestination(icon: Icon(d.icon), label: Text(d.label))).toList(),
           ),
           const VerticalDivider(width: 1),
@@ -51,11 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('Notes'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            tooltip: 'Buscar',
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SearchScreen())),
-          ),
+          IconButton(icon: const Icon(Icons.search_rounded), tooltip: 'Buscar', onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SearchScreen()))),
           PopupMenuButton<int>(
             icon: const Icon(Icons.more_vert_rounded),
             onSelected: (i) => setState(() => _railIndex = i),
@@ -126,7 +120,7 @@ class _NotesListPane extends ConsumerWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final note = grouped[key]![i];
-                return NoteCard(note: note, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditorScreen(noteId: note.id))));
+                return NoteCard(note: note, onTap: () => openNote(context, ref, note));
               },
             ),
           ),

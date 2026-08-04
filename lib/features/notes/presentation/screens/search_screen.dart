@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/widgets/note_navigation.dart';
 import '../providers/notes_providers.dart';
 import '../widgets/note_card.dart';
-import 'editor_screen.dart';
 class SearchScreen extends ConsumerWidget {
   const SearchScreen({super.key});
   @override
@@ -27,7 +27,7 @@ class SearchScreen extends ConsumerWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 8),
             itemBuilder: (context, i) {
               final note = notes[i];
-              return NoteCard(note: note, onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => EditorScreen(noteId: note.id))));
+              return NoteCard(note: note, onTap: () => openNote(context, ref, note));
             },
           );
         },
